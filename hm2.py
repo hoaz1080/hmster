@@ -8,10 +8,6 @@ from threading import Thread
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 
-
-
-
-logger   = setup_custom_logger("mainapp")
 executor = ThreadPoolExecutor(15)
 
 with open('config.json') as f:
