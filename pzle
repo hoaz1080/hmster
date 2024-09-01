@@ -19,14 +19,11 @@ with client:
 
 
 async def get_grid_state(bot):
-    # Retrieve the latest message containing the grid state
     messages = await client.get_messages(bot, limit=1)
     grid = parse_grid(messages[0].message)  # Implement parse_grid according to your game
     return grid
 
 def parse_grid(message):
-    # Implement the logic to parse the grid from the bot's message
-    # Example: Assuming the message contains a grid in some structured text format
     grid = []
     for line in message.splitlines():
         if line.strip():  # Skip empty lines
@@ -39,7 +36,6 @@ def find_best_move(grid):
     
     for row in range(len(grid)):
         for col in range(len(grid[row])):
-            # Check adjacent tiles (right and down only to avoid redundancy)
             if col < len(grid[row]) - 1:
                 score = simulate_move(grid, row, col, row, col + 1)  # Swap right
                 if score > best_score:
@@ -55,19 +51,13 @@ def find_best_move(grid):
     return best_move
 
 def simulate_move(grid, row1, col1, row2, col2):
-    # Swap tiles
     new_grid = [row[:] for row in grid]
     new_grid[row1][col1], new_grid[row2][col2] = new_grid[row2][col2], new_grid[row1][col1]
-
-    # Calculate the score based on the new grid state
     score = calculate_score(new_grid)  # Implement this based on game rules
     return score
 
 def calculate_score(grid):
-    # Implement the scoring logic based on your game's rules
-    # Example: Count the number of tiles cleared
     score = 0
-    # Logic to calculate score
     return score
 
 async def execute_move(bot, move):
@@ -75,9 +65,18 @@ async def execute_move(bot, move):
     move_command = f"swap {row1},{col1} with {row2},{col2}"
     await client.send_message(bot, move_command)
 
+async def claim_rewards(bot):
+    messages = await client.get_messages(bot, limit=1)
+    buttons = messages[0].buttons
+    if buttons:
+        await buttons[0][0].click()
+        print("Claimed rewards!")
+
 async def play_hexa_puzzle():
     await client.start(phone_number)
     bot = await client.get_entity('HamsterKombatBot')
+    
+    start_time = time.time()
     
     while True:
         grid = await get_grid_state(bot)
@@ -90,8 +89,24 @@ async def play_hexa_puzzle():
             await asyncio.sleep(1)  # Wait time between moves
         else:
             break  # No more valid moves
-    
-    print("Puzzle completed, all moves executed.")
+        
+        # Check if an hour has passed
+        if time.time() - start_time > 3600:
+            print("Time's up! Exiting puzzle to claim rewards.")
+            await client.send_message(bot, '/quit')
+            await asyncio.sleep(2)  # Wait for the exit to process
+            await claim_rewards(bot)
+            start_time = time.time()  # Reset the timer
+            await asyncio.sleep(2)  # Small delay before restarting the puzzle
+
+            # Restart the puzzle
+            await client.send_message(bot, '/minigames')
+            await asyncio.sleep(2)
+            messages = await client.get_messages(bot, limit=1)
+            buttons = messages[0].buttons
+            if buttons:
+                await buttons[0][0].click()
+                print("Restarted Hexa Puzzle")
 
 with client:
     client.loop.run_until_complete(play_hexa_puzzle())
