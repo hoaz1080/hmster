@@ -88,7 +88,7 @@ async def claim_rewards(bot):
         print("Claimed rewards!")
 
 async def play_hexa_puzzle():
-    await client.start(phone_number)
+    # await client.start(phone_number)
     bot = await client.get_entity('HamsterKombatBot')
     
     start_time = time.time()
