@@ -1,0 +1,97 @@
+from telethon import TelegramClient
+
+# Leave api_id and api_hash empty
+client = TelegramClient('session_name', 'YOUR_API_ID', 'YOUR_API_HASH')
+
+async def main():
+    # Log in using your phone number
+    await client.start(phone_number='+989218750331')
+
+    # After login, you can save the session string
+    session_string = client.session.save()
+    print("Session string:", session_string)
+    
+    # You can now use the session string for future logins
+    
+with client:
+    client.loop.run_until_complete(main())
+
+
+
+async def get_grid_state(bot):
+    # Retrieve the latest message containing the grid state
+    messages = await client.get_messages(bot, limit=1)
+    grid = parse_grid(messages[0].message)  # Implement parse_grid according to your game
+    return grid
+
+def parse_grid(message):
+    # Implement the logic to parse the grid from the bot's message
+    # Example: Assuming the message contains a grid in some structured text format
+    grid = []
+    for line in message.splitlines():
+        if line.strip():  # Skip empty lines
+            grid.append([int(char) for char in line if char.isdigit()])
+    return grid
+
+def find_best_move(grid):
+    best_move = None
+    best_score = 0
+    
+    for row in range(len(grid)):
+        for col in range(len(grid[row])):
+            # Check adjacent tiles (right and down only to avoid redundancy)
+            if col < len(grid[row]) - 1:
+                score = simulate_move(grid, row, col, row, col + 1)  # Swap right
+                if score > best_score:
+                    best_score = score
+                    best_move = (row, col, row, col + 1)
+
+            if row < len(grid) - 1:
+                score = simulate_move(grid, row, col, row + 1, col)  # Swap down
+                if score > best_score:
+                    best_score = score
+                    best_move = (row, col, row + 1, col)
+    
+    return best_move
+
+def simulate_move(grid, row1, col1, row2, col2):
+    # Swap tiles
+    new_grid = [row[:] for row in grid]
+    new_grid[row1][col1], new_grid[row2][col2] = new_grid[row2][col2], new_grid[row1][col1]
+
+    # Calculate the score based on the new grid state
+    score = calculate_score(new_grid)  # Implement this based on game rules
+    return score
+
+def calculate_score(grid):
+    # Implement the scoring logic based on your game's rules
+    # Example: Count the number of tiles cleared
+    score = 0
+    # Logic to calculate score
+    return score
+
+async def execute_move(bot, move):
+    row1, col1, row2, col2 = move
+    move_command = f"swap {row1},{col1} with {row2},{col2}"
+    await client.send_message(bot, move_command)
+
+async def play_hexa_puzzle():
+    await client.start(phone_number)
+    bot = await client.get_entity('HamsterKombatBot')
+    
+    while True:
+        grid = await get_grid_state(bot)
+        if not grid:
+            break
+        
+        best_move = find_best_move(grid)
+        if best_move:
+            await execute_move(bot, best_move)
+            await asyncio.sleep(1)  # Wait time between moves
+        else:
+            break  # No more valid moves
+    
+    print("Puzzle completed, all moves executed.")
+
+with client:
+    client.loop.run_until_complete(play_hexa_puzzle())
