@@ -1,4 +1,5 @@
-from telethon import TelegramClient
+from telethon.sync import TelegramClient
+from telethon import functions, types, events, Button, errors
 
 # Leave api_id and api_hash empty
 client = TelegramClient('sessions/robot', api_id, api_hash)
