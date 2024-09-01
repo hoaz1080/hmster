@@ -1,7 +1,7 @@
 from telethon import TelegramClient
 
 # Leave api_id and api_hash empty
-client = TelegramClient('session_name')
+client = TelegramClient('session_name', api_id, api_hash)
 
 async def main():
     # Log in using your phone number
