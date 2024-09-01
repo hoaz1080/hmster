@@ -1,6 +1,18 @@
 from telethon.sync import TelegramClient
 from telethon import functions, types, events, Button, errors
 
+with open('config.json') as f:
+    data             = json.load(f)
+    api_id           = data['api_id']
+    api_hash         = data['api_hash']
+    admin            = data['admin']
+    bot_token        = data['bot_token']
+    
+    
+
+if not os.path.exists('sessions'):
+    os.mkdir('sessions')
+
 # Leave api_id and api_hash empty
 client = TelegramClient('sessions/robot', api_id, api_hash)
 client.start(bot_token=bot_token)
