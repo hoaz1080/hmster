@@ -1,8 +1,8 @@
 from telethon import TelegramClient
 
 # Leave api_id and api_hash empty
-client = TelegramClient('session_name', api_id, api_hash)
-
+client = TelegramClient('sessions/robot', api_id, api_hash)
+client.start(bot_token=bot_token)
 async def main():
     # Log in using your phone number
     await client.start(phone_number='+989218750331')
